@@ -1,11 +1,13 @@
 # ================================
-# app.py – Dual Expert Flask App ✅
+# app.py – Dual Expert Flask App ✅ (Render-ready: auto-download .pth from HF)
 # ================================
 
 from flask import Flask, render_template, request, jsonify, send_file
 import os, time, ast, traceback, gc, base64, mimetypes, re
 from typing import List, Tuple, Optional
 from io import BytesIO
+
+import requests
 
 import pandas as pd
 import torch
@@ -35,8 +37,7 @@ EXPORT_INTERNAL_COLS = False
 APP_NAME = "Catégorisation de produits Auchan"
 UI_MODE = "final_only"
 
-
-# ✅ IMPORTANT: utiliser une URL web (pas un chemin Windows)
+# ✅ IMPORTANT: paths compatibles Render (pas de chemins Windows)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 BACKGROUND_IMAGE = "/static/imageeco.jpg"
@@ -47,7 +48,6 @@ PHASE2_CKPT = os.path.join(BASE_DIR, "models", "domain_expert_flat.pth")
 DOMAIN_CSV = os.path.join(BASE_DIR, "data", "domain_expert_phase2_top10_predictions_full (1).csv")
 DUEL_CSV   = os.path.join(BASE_DIR, "data", "duel_expert_mistral_GENERAL_EXPERT_top10_corrected (1).csv")
 
-
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MAX_LEN = 160
 
@@ -57,7 +57,7 @@ MIN_TEXT_CHARS = 18
 HIGH_CONF_SKIP = 0.98
 HIGH_MARGIN_SKIP = 0.20
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8MB
@@ -109,6 +109,41 @@ def clamp_int(x, lo, hi, default):
         return max(lo, min(hi, v))
     except Exception:
         return default
+
+
+# ----------------------------
+# HF MODEL DOWNLOAD (Render-friendly)
+# ----------------------------
+MODEL_URL = os.getenv(
+    "MODEL_URL",
+    "https://huggingface.co/Bineta123/domain-expert-xlmr/resolve/main/domain_expert_flat.pth"
+).strip()
+
+HF_TOKEN = os.getenv("HF_TOKEN", "").strip()  # seulement si repo HF privé
+
+def download_file(url: str, dst_path: str, timeout_sec: int = 600):
+    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+
+    headers = {}
+    if HF_TOKEN:
+        headers["Authorization"] = f"Bearer {HF_TOKEN}"
+
+    print(f"[DL] Downloading: {url}")
+    with requests.get(url, headers=headers, stream=True, timeout=timeout_sec) as r:
+        r.raise_for_status()
+        with open(dst_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    f.write(chunk)
+    print(f"[DL] Saved -> {dst_path}")
+
+def ensure_model_file():
+    # Sur Render: le fichier n'est pas dans GitHub → on le télécharge
+    if safe_exists(PHASE2_CKPT):
+        return
+    if not MODEL_URL:
+        raise FileNotFoundError("MODEL_URL non défini et checkpoint introuvable.")
+    download_file(MODEL_URL, PHASE2_CKPT)
 
 
 # ----------------------------
@@ -314,8 +349,11 @@ def load_everything():
     try:
         if not safe_exists(GLOBAL_CSV):
             raise FileNotFoundError(f"GLOBAL_CSV introuvable: {GLOBAL_CSV}")
+
+        # ✅ Render: télécharge le .pth si pas présent
+        ensure_model_file()
         if not safe_exists(PHASE2_CKPT):
-            raise FileNotFoundError(f"Checkpoint introuvable: {PHASE2_CKPT}")
+            raise FileNotFoundError(f"Checkpoint introuvable après download: {PHASE2_CKPT}")
 
         tokenizer_local = XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-large")
 
@@ -536,8 +574,8 @@ def playground():
     return render_template(
         "domain_expert.html",
         background_image=BACKGROUND_IMAGE,
-        plot_html=None,              # ✅ tu as dit tu ne veux plus ça ici
-        products=None,               # ✅ idem
+        plot_html=None,
+        products=None,
         domain_metrics=None,
         duel_metrics=None,
         app_name=APP_NAME
@@ -545,7 +583,6 @@ def playground():
 
 @app.route("/leaderboard", methods=["GET"])
 def leaderboard_page():
-    # ✅ maintenant on envoie plot + produits ici
     return render_template(
         "leaderboard.html",
         background_image=BACKGROUND_IMAGE,
