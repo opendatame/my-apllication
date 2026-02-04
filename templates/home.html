@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>🛒 {{ app_name if app_name else "Catégorisation de produits Auchan" }} — Accueil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root{
+      --primary:#0d47a1;
+      --primary2:#1e88e5;
+      --bgGlass: rgba(255,255,255,0.92);
+      --shadow: 0 10px 25px rgba(0,0,0,0.12);
+      --radius: 18px;
+      --success:#1b5e20;
+      --danger:#b71c1c;
+      --warn:#e65100;
+    }
+
+    body{
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url("{{ background_image }}");
+      background-size: cover;
+      background-attachment: fixed;
+      color:#222;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container{ max-width: 1100px; margin: 0 auto; }
+
+    /* NAVBAR */
+    .nav{
+      background: var(--bgGlass);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 900;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .brand .dot{
+      width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+      box-shadow: 0 6px 14px rgba(66,165,245,0.35);
+    }
+    .navlinks{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .navlinks a{
+      text-decoration:none;
+      font-weight: 800;
+      color: var(--primary);
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(13,71,161,0.12);
+      background: rgba(13,71,161,0.06);
+      transition: 0.15s;
+    }
+    .navlinks a:hover{ transform: translateY(-1px); }
+    .navlinks a.active{
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+    }
+
+    .hero{
+      background: var(--bgGlass);
+      padding: 22px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+      margin-bottom: 16px;
+    }
+    .hero h1{
+      margin: 0 0 6px 0;
+      color: var(--primary);
+      text-shadow: 1px 1px 2px #ffffffaa;
+      font-size: 28px;
+    }
+    .hero p{
+      margin: 0;
+      color:#333;
+      line-height: 1.5;
+    }
+
+    .pill{
+      display:inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(13,71,161,0.08);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 12px;
+      border: 1px solid rgba(13,71,161,0.15);
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .card{
+      background: var(--bgGlass);
+      padding: 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    .card h2{
+      margin: 0 0 8px 0;
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .muted{ color:#555; font-size: 13px; line-height:1.45; }
+
+    .btnRow{
+      margin-top: 12px;
+      display:flex;
+      gap:10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .btn{
+      padding: 11px 16px;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 800;
+      text-decoration: none;
+      display:inline-block;
+      transition: 0.2s;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+
+    .btn.secondary{
+      background: #ffffff;
+      color: var(--primary);
+      border: 1px solid #bbdefb;
+      font-weight: 800;
+    }
+
+    .statusBox{
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    .ok{ color: var(--success); font-weight: 900; }
+    .err{ color: var(--danger); font-weight: 900; }
+    .warn{ color: var(--warn); font-weight: 900; }
+
+    @media(max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      .nav{ justify-content: center; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- NAV -->
+  <div class="nav">
+    <a class="brand" href="/">
+      <span class="dot"></span>
+      <span>{{ app_name if app_name else "Catégorisation de produits Auchan" }}</span>
+    </a>
+
+    <div class="navlinks">
+      <a href="/" class="active">Accueil</a>
+      <a href="/playground">Playground</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="/project">Projet</a>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>🛒 {{ app_name if app_name else "Catégorisation de produits Auchan" }}</h1>
+    <p>
+      Application de catégorisation e-commerce basée sur un <b>Domain Expert (XLM-R)</b> et une
+      <b>vérification LLM</b> (optionnelle) pour améliorer les cas ambigus.
+      <span class="pill" style="margin-left:8px;">Sortie = 1 catégorie finale</span>
+    </p>
+
+    <div class="statusBox" style="margin-top:14px;">
+      <div class="muted" style="margin-bottom:6px;"><b>Statut système</b> (auto)</div>
+      <div id="sysStatus" class="muted">Chargement…</div>
+    </div>
+
+    <div class="btnRow">
+      <a class="btn" href="/playground">🚀 Ouvrir le Playground</a>
+      <a class="btn secondary" href="/leaderboard">🏆 Voir le Leaderboard</a>
+      <a class="btn secondary" href="/project">📌 Lire le Projet</a>
+    </div>
+  </div>
+
+  <!-- QUICK CARDS -->
+  <div class="grid">
+    <div class="card">
+      <h2>🎛️ Playground</h2>
+      <div class="muted">
+        Tester la catégorisation sur <b>texte</b>, <b>image</b>, ou en <b>batch CSV</b>.
+        L’API renvoie uniquement la <b>catégorie finale</b>.
+      </div>
+      <div class="btnRow">
+        <a class="btn" href="/playground">Aller au Playground</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏆 Leaderboard</h2>
+      <div class="muted">
+        Comparer les modèles (Domain Expert vs Dual Expert) avec un <b>score composite</b> :
+        0.5·F1 + 0.3·Acc + 0.2·Top-10.
+      </div>
+      <div class="btnRow">
+        <a class="btn" href="/leaderboard">Ouvrir le Leaderboard</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📌 Projet</h2>
+      <div class="muted">
+        Description du pipeline, objectifs, workflow, tâches et livrables (reproduction du Dual-Expert).
+      </div>
+      <div class="btnRow">
+        <a class="btn" href="/project">Voir la page Projet</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔌 Endpoints API</h2>
+    <div class="muted">
+      <span class="pill">POST</span> /api/predict (JSON: {"text": ...}) &nbsp;
+      <span class="pill">POST</span> /api/predict_image (form-data: file) &nbsp;
+      <span class="pill">POST</span> /api/predict_batch (form-data: csv_file) &nbsp;
+      <span class="pill">GET</span> /api/export.csv &nbsp;
+      <span class="pill">GET</span> /api/leaderboard
+    </div>
+  </div>
+
+</div>
+
+<script>
+  async function loadStatus(){
+    const el = document.getElementById("sysStatus");
+    try{
+      const r = await fetch("/api/ping");
+      const d = await r.json();
+      if(!r.ok) throw new Error(d.error || "Erreur /api/ping");
+
+      const ready = d.model_ready ? "✅ prêt" : "⏳ non chargé";
+      const key = d.has_openai_key ? "✅ OK" : "⚠️ absente";
+      const device = d.device || "—";
+
+      el.innerHTML = `
+        Modèle : <b>${ready}</b> &nbsp;•&nbsp;
+        OpenAI key : <b>${key}</b> &nbsp;•&nbsp;
+        Device : <b>${device}</b>
+      `;
+    }catch(e){
+      el.innerHTML = `<span class="err">❌ ${e.message}</span>`;
+    }
+  }
+  loadStatus();
+</script>
+
+</body>
+</html>

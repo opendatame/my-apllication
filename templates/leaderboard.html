@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ app_name if app_name else "Catégorisation de produits Auchan" }} — Leaderboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --primary:#0d47a1;
+      --primary2:#1e88e5;
+      --bgGlass: rgba(255,255,255,0.92);
+      --shadow: 0 10px 25px rgba(0,0,0,0.12);
+      --radius: 18px;
+      --success:#1b5e20;
+      --danger:#b71c1c;
+    }
+    body{
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url("{{ background_image }}");
+      background-size: cover;
+      background-attachment: fixed;
+      color:#222;
+      padding: 20px;
+      margin: 0;
+    }
+    .container{ max-width: 1100px; margin: 0 auto; }
+    .card{
+      background: var(--bgGlass);
+      padding: 18px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+      margin-bottom: 14px;
+    }
+    .nav{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px; flex-wrap:wrap;
+    }
+    .brand{
+      font-weight: 900;
+      color: var(--primary);
+      text-decoration:none;
+      display:flex; gap:10px; align-items:center;
+    }
+    .dot{
+      width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+      box-shadow: 0 6px 14px rgba(66,165,245,0.35);
+    }
+    .navlinks{ display:flex; gap:10px; flex-wrap:wrap; }
+    .navlinks a{
+      text-decoration:none;
+      font-weight: 800;
+      color: var(--primary);
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(13,71,161,0.12);
+      background: rgba(13,71,161,0.06);
+    }
+    .navlinks a.active{
+      color:#fff;
+      border-color: transparent;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+    }
+
+    h1{ margin:0 0 8px 0; color: var(--primary); }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+    input, select{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.15);
+      background: rgba(255,255,255,0.85);
+      outline:none;
+      font-family: inherit;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.95);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    th, td{
+      border: 1px solid #d0d7de;
+      padding: 10px;
+      text-align:left;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th{
+      background: var(--primary);
+      color:#fff;
+    }
+    tr:nth-child(even){ background-color: rgba(13,71,161,0.04); }
+    .pill{
+      display:inline-block; padding: 5px 9px; border-radius: 999px;
+      background: rgba(13,71,161,0.08);
+      border: 1px solid rgba(13,71,161,0.15);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .ok{ color: var(--success); font-weight: 900; }
+    .err{ color: var(--danger); font-weight: 900; }
+    .plotWrap{
+      margin-top: 12px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: rgba(255,255,255,0.95);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="card nav">
+      <a class="brand" href="/"><span class="dot"></span><span>{{ app_name if app_name else "Catégorisation de produits Auchan" }}</span></a>
+      <div class="navlinks">
+        <a href="/">Accueil</a>
+        <a href="/playground">Playground</a>
+        <a href="/leaderboard" class="active">Leaderboard</a>
+        <a href="/project">Projet</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h1>🏆 Leaderboard</h1>
+      <div class="pill">Classement = score composite (0.5·F1 + 0.3·Acc + 0.2·Top-10)</div>
+
+      <div class="row">
+        <input id="q" placeholder="Filtrer par modèle…" />
+        <select id="sort">
+          <option value="score">Trier par Score</option>
+          <option value="f1_macro">Trier par F1</option>
+          <option value="accuracy_top1">Trier par Accuracy</option>
+          <option value="top10_acc">Trier par Top-10</option>
+        </select>
+      </div>
+
+      <div id="status" style="margin-top:10px;"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Modèle</th>
+            <th>Score</th>
+            <th>Acc Top-1</th>
+            <th>F1 Macro</th>
+            <th>Top-10 Acc</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ✅ PLOT ICI -->
+    {% if plot_html %}
+    <div class="card">
+      <h1 style="font-size:18px;">📊 Comparaison Domain vs Dual Expert</h1>
+      <div class="plotWrap">
+        {{ plot_html|safe }}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ✅ EXEMPLES ICI -->
+    {% if products %}
+    <div class="card">
+      <h1 style="font-size:18px;">📦 Exemple (10 produits)</h1>
+      <table>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Catégorie finale</th>
+          <th>Vrai label</th>
+        </tr>
+        {% for p in products %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ p['description'][:180] }}{% if p['description']|length > 180 %}...{% endif %}</td>
+          <td>{{ p.get('final_duel_pred', '—') }}</td>
+          <td>{{ p.get('true_label', '—') }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}
+
+  </div>
+
+<script>
+  let ROWS = [];
+
+  async function loadBoard(){
+    const st = document.getElementById("status");
+    st.innerHTML = `<span class="pill">Chargement…</span>`;
+    try{
+      const r = await fetch("/api/leaderboard");
+      const d = await r.json();
+      if(!r.ok) throw new Error(d.error || "Erreur leaderboard.");
+      ROWS = d.rows || [];
+      st.innerHTML = `<span class="ok">✅ ${ROWS.length} modèle(s) chargé(s)</span>`;
+      render();
+    }catch(e){
+      st.innerHTML = `<span class="err">❌ ${e.message}</span>`;
+    }
+  }
+
+  function render(){
+    const q = (document.getElementById("q").value || "").toLowerCase();
+    const key = document.getElementById("sort").value;
+
+    let rows = ROWS.filter(x => (x.model || "").toLowerCase().includes(q));
+    rows.sort((a,b)=> (b[key] ?? 0) - (a[key] ?? 0));
+
+    const tb = document.getElementById("tbody");
+    tb.innerHTML = "";
+
+    rows.forEach((x,i)=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td><b>${x.model || ""}</b></td>
+        <td>${x.score ?? ""}</td>
+        <td>${x.accuracy_top1 ?? ""}</td>
+        <td>${x.f1_macro ?? ""}</td>
+        <td>${x.top10_acc ?? ""}</td>
+        <td>${x.notes ?? ""}</td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  document.getElementById("q").addEventListener("input", render);
+  document.getElementById("sort").addEventListener("change", render);
+
+  loadBoard();
+</script>
+</body>
+</html>

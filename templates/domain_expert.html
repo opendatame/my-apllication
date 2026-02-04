@@ -1,219 +1,584 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>🛒 Duel Expert – Product Categorization</title>
-    <style>
-        /* === BODY & FOND === */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-image: url("{{ background_image }}");
-            background-size: cover;
-            background-attachment: fixed;
-            color: #333;
-            padding: 20px;
-        }
-        h1, h2 {
-            color: #0d47a1;
-            text-shadow: 1px 1px 2px #ffffffaa;
-        }
+  <meta charset="UTF-8">
+  <title>🛒 {{ app_name if app_name else "Catégorisation de produits Auchan" }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        /* === BOXES === */
-        .metrics, .prediction, .form-section {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
-        }
+  <style>
+    :root{
+      --primary:#0d47a1;
+      --primary2:#1e88e5;
+      --bgGlass: rgba(255,255,255,0.92);
+      --shadow: 0 10px 25px rgba(0,0,0,0.12);
+      --radius: 18px;
+      --success:#1b5e20;
+      --danger:#b71c1c;
+      --warn:#e65100;
+    }
 
-        /* === TABLE === */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background-color: rgba(255,255,255,0.95);
-        }
-        th, td {
-            border: 1px solid #bbb;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #0d47a1;
-            color: #fff;
-        }
-        tr:nth-child(even) {
-            background-color: rgba(13,71,161,0.05);
-        }
-        tr:hover {
-            background-color: rgba(13,71,161,0.15);
-        }
+    body{
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url("{{ background_image }}");
+      background-size: cover;
+      background-attachment: fixed;
+      color:#222;
+      padding: 20px;
+      margin: 0;
+    }
 
-        /* === INPUTS & BOUTONS === */
-        input[type="text"], input[type="file"] {
-            width: 70%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-        }
-        input[type="submit"] {
-            padding: 10px 20px;
-            background: linear-gradient(90deg,#1e88e5,#42a5f5);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        input[type="submit"]:hover {
-            background: linear-gradient(90deg,#1565c0,#1e88e5);
-        }
+    .container{ max-width: 1100px; margin: 0 auto; }
 
-        /* === PLOTLY === */
-        .plotly-div {
-            margin-top: 25px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
+    /* ✅ NAVBAR */
+    .nav{
+      background: var(--bgGlass);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+      padding: 12px 14px;
+      margin-bottom: 14px;
 
-        /* === MESSAGE CHARGEMENT === */
-        #loading-message {
-            display: none;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #e65100;
-        }
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 900;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .brand .dot{
+      width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+      box-shadow: 0 6px 14px rgba(66,165,245,0.35);
+    }
+    .navlinks{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .navlinks a{
+      text-decoration:none;
+      font-weight: 800;
+      color: var(--primary);
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(13,71,161,0.12);
+      background: rgba(13,71,161,0.06);
+      transition: 0.15s;
+    }
+    .navlinks a:hover{ transform: translateY(-1px); }
+    .navlinks a.active{
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+    }
 
-        /* === RESPONSIVE === */
-        @media(max-width: 768px){
-            input[type="text"], input[type="file"] {
-                width: 100%;
-                margin-bottom: 15px;
-            }
-            input[type="submit"] {
-                width: 100%;
-            }
-        }
-    </style>
+    .hero{
+      background: var(--bgGlass);
+      padding: 20px 22px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+    }
+    .hero h1{
+      margin: 0 0 6px 0;
+      color: var(--primary);
+      text-shadow: 1px 1px 2px #ffffffaa;
+      font-size: 26px;
+    }
+    .hero p{
+      margin: 0;
+      color:#333;
+      line-height: 1.4;
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 16px;
+    }
+
+    .card{
+      background: var(--bgGlass);
+      padding: 18px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+      margin-bottom: 16px;
+    }
+
+    h2{
+      margin: 0 0 12px 0;
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .muted{ color:#555; font-size: 13px; }
+
+    textarea{
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #cfd8dc;
+      outline: none;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .btn{
+      padding: 11px 16px;
+      background: linear-gradient(90deg, var(--primary2), #42a5f5);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+
+    .btn.secondary{
+      background: #ffffff;
+      color: var(--primary);
+      border: 1px solid #bbdefb;
+      font-weight: 700;
+    }
+
+    .pill{
+      display:inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(13,71,161,0.08);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 12px;
+      border: 1px solid rgba(13,71,161,0.15);
+    }
+
+    .resultBox{
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 14px;
+      padding: 12px 12px;
+      background: rgba(255,255,255,0.75);
+    }
+
+    .big{
+      font-size: 15px;
+      font-weight: 800;
+      color:#0b2f6b;
+      margin: 6px 0;
+      word-break: break-word;
+    }
+
+    .finalBadge{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(13,71,161,0.16);
+      background: rgba(13,71,161,0.06);
+      margin-top: 6px;
+    }
+    .finalLabel{ font-weight:900; color:#0b2f6b; }
+
+    .status{
+      margin-top: 10px;
+      font-weight: 700;
+      color: var(--warn);
+      display: none;
+    }
+    .ok{ color: var(--success); font-weight: 800; }
+    .err{ color: var(--danger); font-weight: 800; }
+
+    input[type="file"]{
+      width: 100%;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #cfd8dc;
+      background: rgba(255,255,255,0.7);
+      box-sizing: border-box;
+    }
+
+    .previewWrap{
+      margin-top: 10px;
+      display: none;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .previewWrap img{
+      max-width: 160px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+      background: #fff;
+    }
+
+    .internalOnly{ display:none !important; }
+
+    @media(max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      .nav{ justify-content: center; }
+    }
+  </style>
 </head>
+
 <body>
-    <h1>🛒 Duel Expert – Product Categorization</h1>
+<div class="container">
 
-    <!-- METRICS -->
-    <div class="metrics">
-        <h2>📊 Domain Expert Metrics</h2>
-        <p><strong>Accuracy:</strong> {{ domain_metrics['accuracy']|round(4) }}</p>
-        <p><strong>Precision (Macro):</strong> {{ domain_metrics['precision']|round(4) }}</p>
-        <p><strong>Recall (Macro):</strong> {{ domain_metrics['recall']|round(4) }}</p>
-        <p><strong>F1 (Macro):</strong> {{ domain_metrics['f1']|round(4) }}</p>
-        <p><strong>Top-10 Accuracy:</strong> {{ domain_metrics['top10_acc']|round(4) }}</p>
+  <!-- ✅ NAV -->
+  <div class="nav">
+    <a class="brand" href="/">
+      <span class="dot"></span>
+      <span>{{ app_name if app_name else "Catégorisation de produits Auchan" }}</span>
+    </a>
+
+    <div class="navlinks">
+      <a href="/">Accueil</a>
+      <a href="/playground" class="active">Playground</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="/project">Projet</a>
     </div>
+  </div>
 
-    <div class="metrics">
-        <h2>📊 Duel Expert Metrics</h2>
-        <p><strong>Accuracy:</strong> {{ duel_metrics['accuracy']|round(4) }}</p>
-        <p><strong>Precision (Macro):</strong> {{ duel_metrics['precision']|round(4) }}</p>
-        <p><strong>Recall (Macro):</strong> {{ duel_metrics['recall']|round(4) }}</p>
-        <p><strong>F1 (Macro):</strong> {{ duel_metrics['f1']|round(4) }}</p>
-        <p><strong>Top-10 Accuracy:</strong> {{ duel_metrics['top10_acc']|round(4) }}</p>
-    </div>
+  <div class="hero">
+    <h1>🛒 {{ app_name if app_name else "Catégorisation de produits Auchan" }}</h1>
+    <p>
+      Entrez une description produit (texte) ou uploadez une image, puis obtenez une
+      <b>catégorie finale</b>.
+      <span class="pill" style="margin-left:8px;">Top-1 / Top-10 cachés</span>
+    </p>
+  </div>
 
-    <!-- PLOTLY -->
-    <div class="plotly-div">
-        {{ plot_html|safe }}
-    </div>
+  <div class="grid">
 
-    <!-- FORMULAIRE -->
-    <div class="form-section">
-        <h2>📝 Prédiction d'un nouveau produit, image ou CSV</h2>
-        <form id="predict-form" method="post" enctype="multipart/form-data">
-            <input type="text" name="product_text" placeholder="Entrez la description du produit">
-            <br><br>
-            <input type="file" name="csv_file" accept=".csv">
-            <br><br>
-            <input type="file" name="product_image" accept="image/*">
-            <br><br>
-            <input type="submit" value="Prédire">
-        </form>
+    <!-- LEFT: Texte + Image -->
+    <div class="card">
+      <h2>🎛️ Playground (Texte)</h2>
+      <p class="muted">Collez une description produit, puis cliquez sur “Catégoriser”. Aucun rechargement de page.</p>
 
-        <div id="loading-message">⏳ Chargement du modèle Duel Expert… veuillez patienter !</div>
+      <textarea id="textInput" placeholder="Ex: iPhone 13 128GB blue unlocked, excellent condition, charger included..."></textarea>
 
-        {% if prediction_results %}
-        <div class="prediction">
-            <h3>Résultat :</h3>
-            {% if prediction_results|length == 1 %}
-                <p><strong>Top-1 Domain Expert:</strong> {{ prediction_results[0]['top1'] }}</p>
-                <p><strong>Duel Expert final:</strong> {{ prediction_results[0]['final'] }}</p>
-                <p><strong>Temps de prédiction:</strong> {{ elapsed_time }} secondes</p>
-            {% else %}
-                <p><strong>{{ prediction_results|length }} produits prédits à partir du CSV ou image</strong></p>
-                <table>
-                    <tr>
-                        <th>#</th>
-                        <th>Description</th>
-                        <th>Top-1 Domain Expert</th>
-                        <th>Top-10 Domain Expert</th>
-                        <th>Duel Expert final</th>
-                    </tr>
-                    {% for p in prediction_results %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ p['text'][:150] }}{% if p['text']|length > 150 %}...{% endif %}</td>
-                        <td>{{ p['top1'] }}</td>
-                        <td>
-                            {% if p['top10'] %}
-                                {{ p['top10'][:10] }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>{{ p['final'] }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-                <p><strong>Temps total:</strong> {{ elapsed_time }} secondes</p>
-            {% endif %}
+      <div class="row">
+        <span class="pill">Résultat = catégorie finale</span>
+        <button class="btn" id="btnPredict">Catégoriser</button>
+        <button class="btn secondary" id="btnClear" type="button">Effacer</button>
+      </div>
+
+      <div id="status" class="status">⏳ Analyse en cours…</div>
+
+      <div style="margin-top:14px;" class="resultBox">
+        <div class="muted">Résultat</div>
+
+        <div class="finalBadge">
+          <span class="finalLabel" id="final">—</span>
         </div>
-        {% endif %}
+
+        <div class="muted" style="margin-top:10px;">
+          Temps de réponse : <span id="latency">—</span>
+          &nbsp;•&nbsp; Vérification intelligente : <span id="usedLLM">—</span>
+        </div>
+
+        <div id="debug" class="muted internalOnly" style="margin-top:6px;"></div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid rgba(0,0,0,0.08); margin:16px 0;">
+
+      <h2>🖼️ Playground (Image)</h2>
+      <p class="muted">
+        Uploadez une image : le LLM génère une description, le Domain Expert prédit,
+        puis le LLM <b>vérifie/corrige</b>.
+        <span class="pill">Sortie = catégorie finale</span>
+      </p>
+
+      <input type="file" id="imgFile" accept="image/*">
+
+      <div class="previewWrap" id="imgPreviewWrap">
+        <img id="imgPreview" alt="aperçu image">
+        <div class="muted" style="flex:1;">
+          <div><span class="pill">Astuce</span> image claire, fond simple = meilleure description</div>
+          <div style="margin-top:8px;">
+            <button class="btn" id="btnPredictImage" type="button">Catégoriser l’image</button>
+            <button class="btn secondary" id="btnClearImage" type="button">Effacer image</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="imgStatus" class="status">⏳ Analyse image en cours…</div>
+
+      <div style="margin-top:14px;" class="resultBox">
+        <div class="muted">Description générée (LLM)</div>
+        <div id="imgDesc" class="big">—</div>
+
+        <div class="muted" style="margin-top:10px;">Résultat</div>
+        <div class="finalBadge">
+          <span class="finalLabel" id="imgFinal">—</span>
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+          Temps de réponse : <span id="imgLatency">—</span>
+          &nbsp;•&nbsp; Vérification intelligente : <span id="imgUsedLLM">—</span>
+        </div>
+
+        <div id="imgDebug" class="muted internalOnly" style="margin-top:6px;"></div>
+      </div>
     </div>
 
-    <!-- TABLE EXEMPLE -->
-    <h2>📦 Exemple de 10 premiers produits</h2>
-    <table>
-        <tr>
-            <th>#</th>
-            <th>Description</th>
-            <th>Top-1 Domain Expert</th>
-            <th>Top-10 Domain Expert</th>
-            <th>Duel Expert final</th>
-            <th>Vrai label</th>
-        </tr>
-        {% for p in products %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ p['description'][:150] }}{% if p['description']|length > 150 %}...{% endif %}</td>
-            <td>{{ p['top1_pred'] }}</td>
-            <td>
-                {% if p['top10_preds'] %}
-                    {{ p['top10_preds'][:10] }}
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td>{{ p['final_duel_pred'] }}</td>
-            <td>{{ p['true_label'] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <!-- RIGHT: Batch -->
+    <div class="card">
+      <h2>📁 Batch CSV</h2>
+      <p class="muted">
+        Upload un CSV avec une colonne <b>text</b> (ou <b>description</b>).
+        Le fichier exporté contiendra <b>final_category</b> (et <b>used_llm</b>).
+      </p>
 
-    <script>
-        document.getElementById("predict-form").addEventListener("submit", function() {
-            document.getElementById("loading-message").style.display = "block";
-        });
-    </script>
+      <input type="file" id="csvFile" accept=".csv">
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="btnBatch">Lancer le batch</button>
+        <a class="btn secondary" id="btnExport" href="/api/export.csv" style="display:none; text-decoration:none;">Exporter CSV</a>
+      </div>
+
+      <div id="batchStatus" class="status">⏳ Batch en cours…</div>
+      <div id="batchDone" class="muted" style="margin-top:10px;"></div>
+
+      <hr style="border:none; border-top:1px solid rgba(0,0,0,0.08); margin:16px 0;">
+
+      <div class="muted">
+        👉 Les métriques / graphiques / exemples sont dans <b>Leaderboard</b>.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // -------- Texte
+  const statusEl = document.getElementById("status");
+  const finalEl = document.getElementById("final");
+  const latencyEl = document.getElementById("latency");
+  const usedLLMEl = document.getElementById("usedLLM");
+  const debugEl = document.getElementById("debug");
+
+  const btnPredict = document.getElementById("btnPredict");
+  const btnClear = document.getElementById("btnClear");
+  const textInput = document.getElementById("textInput");
+
+  function setStatus(show, msg, isError=false){
+    statusEl.style.display = show ? "block" : "none";
+    if(show){
+      statusEl.textContent = msg;
+      statusEl.className = "status " + (isError ? "err" : "");
+    }
+  }
+
+  btnClear.addEventListener("click", () => {
+    textInput.value = "";
+    finalEl.textContent = "—";
+    latencyEl.textContent = "—";
+    usedLLMEl.textContent = "—";
+    setStatus(false, "");
+  });
+
+  btnPredict.addEventListener("click", async () => {
+    const text = textInput.value.trim();
+    if(!text){
+      setStatus(true, "Veuillez entrer une description produit.", true);
+      return;
+    }
+
+    setStatus(true, "⏳ Analyse en cours…");
+    finalEl.textContent = "—";
+    latencyEl.textContent = "—";
+    usedLLMEl.textContent = "—";
+
+    try{
+      const resp = await fetch("/api/predict", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({text: text, k: 10})
+      });
+
+      const data = await resp.json();
+      if(!resp.ok){
+        throw new Error(data.error || "Erreur inconnue.");
+      }
+
+      finalEl.textContent = data.final_category || "—";
+      latencyEl.textContent = (data.latency_sec !== undefined) ? (data.latency_sec + " s") : "—";
+      usedLLMEl.textContent = data.used_llm ? "Activée ✅" : "Désactivée";
+
+      if(data.debug){
+        debugEl.textContent = "debug: " + JSON.stringify(data.debug);
+      }
+
+      setStatus(false, "");
+    }catch(e){
+      setStatus(true, "❌ " + e.message, true);
+    }
+  });
+
+  // -------- Image
+  const imgFile = document.getElementById("imgFile");
+  const imgPreviewWrap = document.getElementById("imgPreviewWrap");
+  const imgPreview = document.getElementById("imgPreview");
+
+  const btnPredictImage = document.getElementById("btnPredictImage");
+  const btnClearImage = document.getElementById("btnClearImage");
+
+  const imgStatus = document.getElementById("imgStatus");
+  const imgDesc = document.getElementById("imgDesc");
+  const imgFinal = document.getElementById("imgFinal");
+  const imgLatency = document.getElementById("imgLatency");
+  const imgUsedLLM = document.getElementById("imgUsedLLM");
+  const imgDebug = document.getElementById("imgDebug");
+
+  function setImgStatus(show, msg, isError=false){
+    imgStatus.style.display = show ? "block" : "none";
+    if(show){
+      imgStatus.textContent = msg;
+      imgStatus.className = "status " + (isError ? "err" : "");
+    }
+  }
+
+  function resetImageResults(){
+    imgDesc.textContent = "—";
+    imgFinal.textContent = "—";
+    imgLatency.textContent = "—";
+    imgUsedLLM.textContent = "—";
+    setImgStatus(false, "");
+  }
+
+  imgFile.addEventListener("change", () => {
+    resetImageResults();
+    if(!imgFile.files || imgFile.files.length === 0){
+      imgPreviewWrap.style.display = "none";
+      return;
+    }
+    const f = imgFile.files[0];
+    const url = URL.createObjectURL(f);
+    imgPreview.src = url;
+    imgPreviewWrap.style.display = "flex";
+  });
+
+  btnClearImage.addEventListener("click", () => {
+    imgFile.value = "";
+    imgPreviewWrap.style.display = "none";
+    imgPreview.src = "";
+    resetImageResults();
+  });
+
+  btnPredictImage.addEventListener("click", async () => {
+    if(!imgFile.files || imgFile.files.length === 0){
+      setImgStatus(true, "Veuillez choisir une image.", true);
+      return;
+    }
+
+    resetImageResults();
+    setImgStatus(true, "⏳ Analyse image en cours…");
+
+    try{
+      const form = new FormData();
+      form.append("file", imgFile.files[0]);
+      form.append("k", "10");
+
+      const resp = await fetch("/api/predict_image", {
+        method: "POST",
+        body: form
+      });
+
+      const data = await resp.json();
+      if(!resp.ok){
+        throw new Error(data.error || "Erreur image.");
+      }
+
+      imgDesc.textContent = data.generated_description || "—";
+      imgFinal.textContent = data.final_category || "—";
+
+      imgLatency.textContent = (data.latency_sec !== undefined) ? (data.latency_sec + " s") : "—";
+      imgUsedLLM.textContent = data.used_llm ? "Activée ✅" : "Désactivée";
+
+      if(data.debug){
+        imgDebug.textContent = "debug: " + JSON.stringify(data.debug);
+      }
+
+      setImgStatus(false, "");
+    }catch(e){
+      setImgStatus(true, "❌ " + e.message, true);
+    }
+  });
+
+  // -------- Batch
+  const btnBatch = document.getElementById("btnBatch");
+  const btnExport = document.getElementById("btnExport");
+  const csvFile = document.getElementById("csvFile");
+  const batchStatus = document.getElementById("batchStatus");
+  const batchDone = document.getElementById("batchDone");
+
+  function setBatchStatus(show, msg, isError=false){
+    batchStatus.style.display = show ? "block" : "none";
+    if(show){
+      batchStatus.textContent = msg;
+      batchStatus.className = "status " + (isError ? "err" : "");
+    }
+  }
+
+  btnBatch.addEventListener("click", async () => {
+    if(!csvFile.files || csvFile.files.length === 0){
+      setBatchStatus(true, "Veuillez choisir un fichier CSV.", true);
+      return;
+    }
+
+    setBatchStatus(true, "⏳ Batch en cours…");
+    batchDone.textContent = "";
+    btnExport.style.display = "none";
+
+    try{
+      const form = new FormData();
+      form.append("csv_file", csvFile.files[0]);
+      form.append("sep", ";");
+      form.append("k", "10");
+
+      const resp = await fetch("/api/predict_batch", { method:"POST", body: form });
+      const data = await resp.json();
+      if(!resp.ok){
+        throw new Error(data.error || "Erreur batch.");
+      }
+
+      setBatchStatus(false, "");
+      batchDone.innerHTML = `<span class="ok">✅ ${data.message}</span> — ${data.n} lignes traitées.`;
+      btnExport.style.display = "inline-block";
+      if(data.export_url){
+        btnExport.setAttribute("href", data.export_url);
+      }
+    }catch(e){
+      setBatchStatus(true, "❌ " + e.message, true);
+    }
+  });
+</script>
+
 </body>
 </html>
