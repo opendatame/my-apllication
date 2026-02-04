@@ -3,7 +3,7 @@
 # ================================
 
 from flask import Flask, render_template, request, jsonify, send_file
-import os, time, ast, traceback, gc, base64, mimetypes, re
+import os, time, ast, traceback, gc, base64, mimetypes
 from typing import List, Tuple, Optional
 from io import BytesIO
 
@@ -119,26 +119,42 @@ MODEL_URL = os.getenv(
     "https://huggingface.co/Bineta123/domain-expert-xlmr/resolve/main/domain_expert_flat.pth"
 ).strip()
 
-HF_TOKEN = os.getenv("HF_TOKEN", "").strip()  # seulement si repo HF privé
+HF_TOKEN = os.getenv("HF_TOKEN", "").strip()  # si repo HF privé
 
-def download_file(url: str, dst_path: str, timeout_sec: int = 600):
+def download_file(url: str, dst_path: str, timeout_sec: int = 1200):
+    """
+    Télécharge le fichier (stream) avec support HF private (Authorization Bearer).
+    Évite les downloads partiels via un fichier .part puis rename.
+    """
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
 
     headers = {}
     if HF_TOKEN:
         headers["Authorization"] = f"Bearer {HF_TOKEN}"
 
+    tmp_path = dst_path + ".part"
+
     print(f"[DL] Downloading: {url}")
     with requests.get(url, headers=headers, stream=True, timeout=timeout_sec) as r:
         r.raise_for_status()
-        with open(dst_path, "wb") as f:
+
+        # (optionnel) log size
+        total = r.headers.get("Content-Length")
+        if total:
+            print(f"[DL] Content-Length: {total} bytes")
+
+        with open(tmp_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     f.write(chunk)
-    print(f"[DL] Saved -> {dst_path}")
+
+    os.replace(tmp_path, dst_path)
+    print(f"[DL] Saved -> {dst_path} ({os.path.getsize(dst_path)} bytes)")
 
 def ensure_model_file():
-    # Sur Render: le fichier n'est pas dans GitHub → on le télécharge
+    """
+    Sur Render: le .pth n'est pas dans GitHub → on le télécharge depuis HF.
+    """
     if safe_exists(PHASE2_CKPT):
         return
     if not MODEL_URL:
