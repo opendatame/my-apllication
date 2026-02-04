@@ -792,6 +792,7 @@ def api_export_csv():
     return send_file(buf, mimetype="text/csv", as_attachment=True, download_name=LAST_BATCH_NAME)
 
 
+
 @app.route("/api/test_model_download", methods=["GET"])
 def test_model_download():
     try:
@@ -807,11 +808,6 @@ def test_model_download():
         }), 500
 
 
-@app.route("/api/ping", methods=["GET"])
-def api_ping():
-    ...
-
-
 @app.route("/api/export.csv", methods=["GET"])
 def api_export_csv():
     global LAST_BATCH_DF, LAST_BATCH_NAME
@@ -825,6 +821,12 @@ def api_export_csv():
     buf.seek(0)
 
     return send_file(buf, mimetype="text/csv", as_attachment=True, download_name=LAST_BATCH_NAME)
+
+
+@app.route("/api/ping", methods=["GET"])
+def api_ping():
+    ...
+
 
 
 if __name__ == "__main__":
