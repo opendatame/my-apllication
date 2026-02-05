@@ -776,7 +776,6 @@ def api_predict_batch():
         "ui_mode": UI_MODE
     })
 
-
 @app.route("/api/export.csv", methods=["GET"])
 def api_export_csv():
     global LAST_BATCH_DF, LAST_BATCH_NAME
@@ -790,43 +789,6 @@ def api_export_csv():
     buf.seek(0)
 
     return send_file(buf, mimetype="text/csv", as_attachment=True, download_name=LAST_BATCH_NAME)
-
-
-
-@app.route("/api/test_model_download", methods=["GET"])
-def test_model_download():
-    try:
-        ensure_model_file()
-        return jsonify({
-            "ckpt_exists_after": safe_exists(PHASE2_CKPT),
-            "path": PHASE2_CKPT
-        })
-    except Exception as e:
-        return jsonify({
-            "error": str(e),
-            "type": type(e).__name__
-        }), 500
-
-
-@app.route("/api/export.csv", methods=["GET"])
-def api_export_csv():
-    global LAST_BATCH_DF, LAST_BATCH_NAME
-
-    if LAST_BATCH_DF is None or len(LAST_BATCH_DF) == 0:
-        return jsonify({"error": "Aucun résultat batch disponible. Lance d'abord un batch."}), 400
-
-    buf = BytesIO()
-    csv_bytes = LAST_BATCH_DF.to_csv(index=False).encode("utf-8")
-    buf.write(csv_bytes)
-    buf.seek(0)
-
-    return send_file(buf, mimetype="text/csv", as_attachment=True, download_name=LAST_BATCH_NAME)
-
-
-@app.route("/api/ping", methods=["GET"])
-def api_ping():
-    ...
-
 
 
 if __name__ == "__main__":
